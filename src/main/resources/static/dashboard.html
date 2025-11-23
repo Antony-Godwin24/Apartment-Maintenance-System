@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Apartment Maintenance System</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-brand">Apartment Maintenance System</div>
+        <div class="nav-links">
+            <span id="user-display">Welcome, User</span>
+            <button onclick="logout()" class="btn-logout">Logout</button>
+        </div>
+    </nav>
+
+    <div class="container dashboard-container">
+        <div class="sidebar">
+            <button class="nav-btn active" onclick="showSection('home')">Home</button>
+            <button class="nav-btn" onclick="showSection('create')">New Request</button>
+            <button class="nav-btn" onclick="showSection('history')">My Requests</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('all-history')">All Requests (Admin)</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('add-apartment')">Add Apartment
+                (Admin)</button>
+        </div>
+
+        <div class="main-content">
+            <!-- Home Section -->
+            <div id="home-section" class="content-section">
+                <h2>All Maintenance Requests</h2>
+                <div id="home-requests-list" class="requests-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Create Request Section -->
+            <div id="create-section" class="content-section hidden">
+                <h2>Submit Maintenance Request</h2>
+                <form onsubmit="handleCreateRequest(event)">
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="req-description" rows="4" required placeholder="Describe the issue..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Apartment</label>
+                        <select id="req-apartment-id" required>
+                            <option value="">Select Apartment</option>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <button type="submit" class="btn-primary" id="create-btn">Submit Request</button>
+                </form>
+            </div>
+
+            <!-- Add Apartment Section (Admin) -->
+            <div id="add-apartment-section" class="content-section hidden">
+                <h2>Add New Apartment</h2>
+                <form onsubmit="handleAddApartment(event)">
+                    <div class="form-group">
+                        <label>Unit Number</label>
+                        <input type="text" id="apt-unit" required placeholder="e.g., 101, 205B">
+                    </div>
+                    <div class="form-group">
+                        <label>Floor</label>
+                        <input type="number" id="apt-floor" required placeholder="e.g., 1, 2">
+                    </div>
+                    <button type="submit" class="btn-primary">Add Apartment</button>
+                </form>
+            </div>
+
+            <!-- History Section -->
+            <div id="history-section" class="content-section hidden">
+                <h2>My Maintenance Requests</h2>
+                <div id="history-list" class="paper-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- All History Section (Admin) -->
+            <div id="all-history-section" class="content-section hidden">
+                <h2>All Maintenance Requests</h2>
+                <div id="all-history-list" class="paper-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+    <script>
+        // Check auth on load
+        if (!localStorage.getItem('token')) {
+            window.location.href = 'index.html';
+        }
+        loadDashboard();
+    </script>
+</body>
+
+</html>
