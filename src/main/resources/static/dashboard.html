@@ -24,12 +24,17 @@
             <button class="nav-btn" onclick="showSection('history')">My Requests</button>
             <button class="nav-btn" onclick="showSection('book-apartment')">Book Apartment</button>
             <button class="nav-btn" onclick="showSection('my-bookings')">My Bookings</button>
-            <button class="nav-btn admin-only hidden" onclick="showSection('all-history')">All Requests (Admin)</button>
-            <button class="nav-btn admin-only hidden" onclick="showSection('booking-requests')">Booking Requests
-                (Admin)</button>
-            <button class="nav-btn admin-only hidden" onclick="showSection('add-apartment')">Add Apartment
-                (Admin)</button>
+            <button class="nav-btn" onclick="showSection('view-all-flats')">View All Flats</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('all-history')">All Requests</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('booking-requests')">Booking
+                Requests</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('all-flats')">All Flats</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('all-users')">All Users</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('user-assignments')">User
+                Assignments</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('add-apartment')">Add Apartment</button>
         </div>
+
 
         <div class="main-content">
             <!-- Home Section -->
@@ -134,6 +139,89 @@
                     <!-- Populated by JS -->
                 </div>
             </div>
+
+            <!-- All Flats Section (Admin) -->
+            <div id="all-flats-section" class="content-section hidden">
+                <h2>All Flats</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Block</th>
+                                <th>Floor</th>
+                                <th>Unit Number</th>
+                                <th>Status</th>
+                                <th>Resident</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-flats-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- All Users Section (Admin) -->
+            <div id="all-users-section" class="content-section hidden">
+                <h2>All Users</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Phone Number</th>
+                                <th>Role</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-users-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Assignments Section (Admin) -->
+            <div id="user-assignments-section" class="content-section hidden">
+                <h2>User Assignments</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Phone Number</th>
+                                <th>Block</th>
+                                <th>Floor</th>
+                                <th>Unit Number</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-assignments-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- View All Flats Section (All Users) -->
+            <div id="view-all-flats-section" class="content-section hidden">
+                <h2>View All Flats</h2>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Block</th>
+                                <th>Floor</th>
+                                <th>Unit Number</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="view-all-flats-table-body">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
     </div>
     <script src="js/app.js"></script>

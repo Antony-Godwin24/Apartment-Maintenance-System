@@ -107,6 +107,10 @@ function showSection(sectionId) {
         document.getElementById('history-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'history\')"]').classList.add('active');
         loadRequests('my');
+    } else if (sectionId === 'all-history') {
+        document.getElementById('all-history-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'all-history\')"]').classList.add('active');
+        loadRequests('all');
     } else if (sectionId === 'book-apartment') {
         document.getElementById('book-apartment-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'book-apartment\')"]').classList.add('active');
@@ -119,11 +123,29 @@ function showSection(sectionId) {
         document.getElementById('my-bookings-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'my-bookings\')"]').classList.add('active');
         loadMyBookings();
+    } else if (sectionId === 'all-flats') {
+        document.getElementById('all-flats-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'all-flats\')"]').classList.add('active');
+        loadAllFlats();
+    } else if (sectionId === 'all-users') {
+        document.getElementById('all-users-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'all-users\')"]').classList.add('active');
+        loadAllUsers();
+    } else if (sectionId === 'user-assignments') {
+        document.getElementById('user-assignments-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'user-assignments\')"]').classList.add('active');
+        loadUserAssignments();
+    } else if (sectionId === 'view-all-flats') {
+        document.getElementById('view-all-flats-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'view-all-flats\')"]').classList.add('active');
+        loadViewAllFlats();
     } else if (sectionId === 'add-apartment') {
         document.getElementById('add-apartment-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'add-apartment\')"]').classList.add('active');
     }
 }
+
+
 
 async function loadHome() {
     try {
@@ -566,6 +588,7 @@ async function handleBookingAction(id, status) {
 
         if (res.ok) {
             loadBookingRequests();
+            loadHome(); // Refresh home to update apartment status
         } else {
             alert('Action failed');
         }
@@ -573,3 +596,191 @@ async function handleBookingAction(id, status) {
         console.error(err);
     }
 }
+
+// --- New Admin Functions ---
+
+async function loadAllFlats() {
+    try {
+        const res = await fetch(`${API_URL}/apartments`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (res.ok) {
+            const apartments = await res.json();
+            const tbody = document.getElementById('all-flats-table-body');
+            tbody.innerHTML = '';
+
+            if (apartments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No apartments found.</td></tr>';
+                return;
+            }
+
+            // Sort by block, then floor, then unit number
+            apartments.sort((a, b) => {
+                if (a.block !== b.block) return a.block.localeCompare(b.block);
+                if (a.floor !== b.floor) return a.floor - b.floor;
+                return a.unitNumber.localeCompare(b.unitNumber);
+            });
+
+            apartments.forEach(apt => {
+                const row = document.createElement('tr');
+                const isBooked = apt.resident !== null;
+                const status = isBooked ? 'Booked' : 'Available';
+                const statusClass = isBooked ? 'status-booked' : 'status-available';
+                const resident = isBooked ? apt.resident.username : '-';
+
+                row.innerHTML = `
+                    <td>${apt.block}</td>
+                    <td>${apt.floor}</td>
+                    <td>${apt.unitNumber}</td>
+                    <td><span class="status-badge ${statusClass}">${status}</span></td>
+                    <td>${resident}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadAllUsers() {
+    try {
+        const res = await fetch(`${API_URL}/users`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (res.ok) {
+            const users = await res.json();
+            const tbody = document.getElementById('all-users-table-body');
+            tbody.innerHTML = '';
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No users found.</td></tr>';
+                return;
+            }
+
+            // Sort by username
+            users.sort((a, b) => a.username.localeCompare(b.username));
+
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${user.phoneNumber || '-'}</td>
+                    <td><span class="status-badge status-${user.role.toLowerCase()}">${user.role}</span></td>
+                    <td>
+                        <button onclick="deleteUser('${user.id}', '${user.username}')" class="btn-danger" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function deleteUser(userId, username) {
+    if (!confirm(`Are you sure you want to delete user "${username}"?\n\nThis will:\n- Remove their account\n- Free up their apartment (if any)\n- Delete all their bookings and maintenance requests\n\nThis action cannot be undone.`)) {
+        return;
+    }
+
+    try {
+        const res = await fetch(`${API_URL}/users/${userId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (res.ok) {
+            alert('User deleted successfully!');
+            loadAllUsers(); // Refresh the table
+        } else {
+            alert('Failed to delete user');
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error deleting user');
+    }
+}
+
+
+async function loadUserAssignments() {
+    try {
+        const res = await fetch(`${API_URL}/apartments/assignments`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (res.ok) {
+            const assignments = await res.json();
+            const tbody = document.getElementById('user-assignments-table-body');
+            tbody.innerHTML = '';
+
+            if (assignments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No user assignments found.</td></tr>';
+                return;
+            }
+
+            // Sort by username
+            assignments.sort((a, b) => a.resident.username.localeCompare(b.resident.username));
+
+            assignments.forEach(apt => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${apt.resident.username}</td>
+                    <td>${apt.resident.phoneNumber || '-'}</td>
+                    <td>${apt.block}</td>
+                    <td>${apt.floor}</td>
+                    <td>${apt.unitNumber}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadViewAllFlats() {
+    try {
+        const res = await fetch(`${API_URL}/apartments`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (res.ok) {
+            const apartments = await res.json();
+            const tbody = document.getElementById('view-all-flats-table-body');
+            tbody.innerHTML = '';
+
+            if (apartments.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" style="text-align: center;">No apartments found.</td></tr>';
+                return;
+            }
+
+            // Sort by block, then floor, then unit number
+            apartments.sort((a, b) => {
+                if (a.block !== b.block) return a.block.localeCompare(b.block);
+                if (a.floor !== b.floor) return a.floor - b.floor;
+                return a.unitNumber.localeCompare(b.unitNumber);
+            });
+
+            apartments.forEach(apt => {
+                const row = document.createElement('tr');
+                const isBooked = apt.resident !== null;
+                const status = isBooked ? 'Booked' : 'Available';
+                const statusClass = isBooked ? 'status-booked' : 'status-available';
+
+                row.innerHTML = `
+                    <td>${apt.block}</td>
+                    <td>${apt.floor}</td>
+                    <td>${apt.unitNumber}</td>
+                    <td><span class="status-badge ${statusClass}">${status}</span></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+

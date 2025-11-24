@@ -27,4 +27,15 @@ public class ApartmentController {
         System.out.println("Found " + apartments.size() + " apartments");
         return ResponseEntity.ok(apartments);
     }
+
+    @GetMapping("/assignments")
+    public ResponseEntity<List<Apartment>> getApartmentAssignments() {
+        List<Apartment> apartments = apartmentRepository.findAll();
+        // Filter only apartments with residents
+        List<Apartment> assignments = apartments.stream()
+                .filter(apt -> apt.getResident() != null)
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(assignments);
+    }
+
 }
