@@ -1,19 +1,24 @@
 # Apartment Maintenance System
 
-A full-stack web application for managing apartment maintenance requests, built with Java Spring Boot and Vanilla JavaScript.
+A full-stack web application for managing apartment maintenance requests and apartment bookings, built with Java Spring Boot and Vanilla JavaScript.
 
 ## 🚀 Features
 
 ### For Residents
 - **User Registration & Login**: Secure account creation and authentication.
-- **Submit Requests**: Create maintenance requests for specific apartments.
-- **View History**: Track the status of submitted requests.
-- **Home Feed**: View all maintenance requests in the building.
+- **Submit Maintenance Requests**: Create maintenance requests for specific apartments.
+- **Book Apartments**: Visual "Bus Seat" style apartment selection (Block -> Floor -> Flat).
+    - **Green**: Available
+    - **Red**: Booked
+- **My Bookings**: View status of booking requests (Pending, Approved, Rejected).
+- **View History**: Track the status of submitted maintenance requests.
+- **Home Feed**: View all maintenance and booking requests in the building.
 
 ### For Admins
-- **Apartment Management**: Add new apartments (Unit Number, Floor) to the system.
-- **Request Management**: View all requests and confirm their completion.
-- **Status Updates**: Mark requests as "COMPLETED" (Confirmed).
+- **Apartment Management**: Add new apartments with Block, Unit Number, and Floor details.
+- **Request Management**: View all maintenance requests and confirm their completion.
+- **Booking Management**: Approve or Reject apartment booking requests.
+- **Status Updates**: Mark maintenance requests as "COMPLETED" and booking requests as "APPROVED" or "REJECTED".
 
 ## 🛠️ Technology Stack
 
@@ -62,17 +67,20 @@ app.jwtSecret=your_custom_secret_key
 ```bash
 mvn spring-boot:run
 ```
-The application will start on `http://localhost:8080`.
+The application will start on `http://localhost:8081`.
 
 ## 📖 Usage
 
-1.  **Open the App**: Navigate to `http://localhost:8080`.
+1.  **Open the App**: Navigate to `http://localhost:8081`.
 2.  **Register**: Create a new account. Select `ROLE_ADMIN` for admin features or `ROLE_RESIDENT` for resident features.
 3.  **Login**: Use your credentials to log in.
 4.  **Dashboard**:
-    *   **Home**: View all requests.
+    *   **Home**: View all Maintenance and Booking requests with status badges.
+    *   **Book Apartment**: Select Block and Floor to view available flats. Click to request booking.
+    *   **My Bookings**: Track your booking request status.
     *   **New Request**: Submit a maintenance issue (Residents).
-    *   **Add Apartment**: Add new units (Admins only).
+    *   **Add Apartment**: Add new units with Block info (Admins only).
+    *   **Booking Requests**: Approve/Reject pending bookings (Admins only).
 
 ## 🔒 Security
 - Passwords are encrypted using BCrypt.
@@ -85,4 +93,3 @@ The application will start on `http://localhost:8080`.
 3.  Commit your changes (`git commit -m 'Add some AmazingFeature'`).
 4.  Push to the branch (`git push origin feature/AmazingFeature`).
 5.  Open a Pull Request.
-"# Apartment-Maintenance-System" 
