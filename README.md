@@ -18,7 +18,7 @@ A full-stack web application for managing apartment maintenance requests, built 
 ## 🛠️ Technology Stack
 
 - **Backend**: Java 17, Spring Boot 3.2.3
-- **Database**: MySQL 8.0
+- **Database**: MongoDB
 - **Security**: Spring Security, JWT (JSON Web Tokens)
 - **Frontend**: HTML5, CSS3, Vanilla JavaScript
 - **Build Tool**: Maven
@@ -28,14 +28,7 @@ A full-stack web application for managing apartment maintenance requests, built 
 ### Prerequisites
 - Java JDK 17 or higher
 - Maven
-- MySQL Server
 - MongoDB (locally installed or via Docker)
-
-### Setup
-1.  Clone the repository.
-2.  Ensure MongoDB is running on `localhost:27017`.
-3.  Update `src/main/resources/application.properties` if your MongoDB configuration differs.
-4.  Run `mvn spring-boot:run`.
 
 ### 1. Clone the Repository
 ```bash
@@ -44,18 +37,26 @@ cd ApartmentMaintenanceSystem
 ```
 
 ### 2. Database Setup
-Create a MySQL database named `Appartment`.
-```sql
-CREATE DATABASE Appartment;
-```
+Ensure MongoDB is running locally on the default port `27017`.
+- **Local Installation**: Start the MongoDB service.
+- **Docker**: Run `docker run -d -p 27017:27017 mongo`.
 
-### 3. Environment Configuration
-Create a `.env` file in the root directory of the project and add your database credentials and JWT secret.
+The application will automatically create the necessary database (`apartment-maintenance-system`) and collections upon the first run.
+
+### 3. Configuration (Optional)
+The application comes with a default JWT secret for development convenience. However, for better security or to customize the secret:
+
+**Option A: Environment Variable (Recommended)**
+Create a `.env` file in the root directory:
 ```properties
-DB_PASSWORD=your_mysql_password
 JWT_SECRET=your_secure_jwt_secret_key_at_least_512_bits_long
 ```
-> **Note**: The `.env` file is excluded from version control for security.
+
+**Option B: Application Properties**
+Edit `src/main/resources/application.properties`:
+```properties
+app.jwtSecret=your_custom_secret_key
+```
 
 ### 4. Run the Application
 ```bash
