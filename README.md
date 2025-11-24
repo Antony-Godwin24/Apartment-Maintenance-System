@@ -29,6 +29,13 @@ A full-stack web application for managing apartment maintenance requests, built 
 - Java JDK 17 or higher
 - Maven
 - MySQL Server
+- MongoDB (locally installed or via Docker)
+
+### Setup
+1.  Clone the repository.
+2.  Ensure MongoDB is running on `localhost:27017`.
+3.  Update `src/main/resources/application.properties` if your MongoDB configuration differs.
+4.  Run `mvn spring-boot:run`.
 
 ### 1. Clone the Repository
 ```bash

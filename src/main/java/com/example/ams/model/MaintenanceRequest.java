@@ -1,39 +1,31 @@
 package com.example.ams.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "maintenance_requests")
+@Document(collection = "maintenance_requests")
 public class MaintenanceRequest {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
     private String description;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Status status;
 
-    @Column(nullable = false)
     private LocalDateTime requestDate;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
+    @DBRef
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "apartment_id", nullable = false)
+    @DBRef
     private Apartment apartment;
 
-    @Column(nullable = false)
     private int likes = 0;
 
-    @Column(nullable = false)
     private int dislikes = 0;
 
     public enum Status {
@@ -43,19 +35,16 @@ public class MaintenanceRequest {
         REJECTED
     }
 
-    @PrePersist
-    protected void onCreate() {
-        requestDate = LocalDateTime.now();
-        if (status == null) {
-            status = Status.PENDING;
-        }
+    public MaintenanceRequest() {
+        this.requestDate = LocalDateTime.now();
+        this.status = Status.PENDING;
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

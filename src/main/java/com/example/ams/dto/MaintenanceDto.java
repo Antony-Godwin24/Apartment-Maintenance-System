@@ -5,7 +5,9 @@ import lombok.Data;
 public class MaintenanceDto {
     public static class CreateRequest {
         private String description;
-        private Long apartmentId;
+
+
+        private String apartmentId;
 
         public String getDescription() {
             return description;
@@ -15,17 +17,17 @@ public class MaintenanceDto {
             this.description = description;
         }
 
-        public Long getApartmentId() {
+        public String getApartmentId() {
             return apartmentId;
         }
 
-        public void setApartmentId(Long apartmentId) {
+        public void setApartmentId(String apartmentId) {
             this.apartmentId = apartmentId;
         }
     }
 
     public static class Response {
-        private Long id;
+        private String id;
         private String description;
         private String status;
         private String requestDate;
@@ -34,11 +36,11 @@ public class MaintenanceDto {
         private int likes;
         private int dislikes;
 
-        public Long getId() {
+        public String getId() {
             return id;
         }
 
-        public void setId(Long id) {
+        public void setId(String id) {
             this.id = id;
         }
 

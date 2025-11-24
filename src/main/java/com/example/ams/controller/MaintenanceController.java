@@ -49,19 +49,19 @@ public class MaintenanceController {
     }
 
     @PostMapping("/{id}/like")
-    public ResponseEntity<?> likeRequest(@PathVariable Long id) {
+    public ResponseEntity<?> likeRequest(@PathVariable String id) {
         maintenanceService.likeRequest(id);
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/{id}/dislike")
-    public ResponseEntity<?> dislikeRequest(@PathVariable Long id) {
+    public ResponseEntity<?> dislikeRequest(@PathVariable String id) {
         maintenanceService.dislikeRequest(id);
         return ResponseEntity.ok().build();
     }
 
     @PutMapping("/{id}/status")
-    public ResponseEntity<?> updateStatus(@PathVariable Long id, @RequestParam String status) {
+    public ResponseEntity<?> updateStatus(@PathVariable String id, @RequestParam String status) {
         try {
             System.out.println("Updating status for request " + id + " to " + status);
             maintenanceService.updateStatus(id, status);

@@ -145,7 +145,7 @@ function renderHomeRequests(requests) {
         if (role === 'ROLE_ADMIN' && req.status === 'PENDING') {
             adminControls = `
                 <div class="admin-controls">
-                    <button onclick="updateStatus(${req.id}, 'COMPLETED')" class="btn-success">Confirm</button>
+                    <button onclick="updateStatus('${req.id}', 'COMPLETED')" class="btn-success">Completed Work</button>
                 </div>
             `;
         }

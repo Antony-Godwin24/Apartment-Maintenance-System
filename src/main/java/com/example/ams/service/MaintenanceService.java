@@ -55,21 +55,21 @@ public class MaintenanceService {
                 .collect(Collectors.toList());
     }
 
-    public void likeRequest(Long id) {
+    public void likeRequest(String id) {
         MaintenanceRequest request = maintenanceRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
         request.setLikes(request.getLikes() + 1);
         maintenanceRequestRepository.save(request);
     }
 
-    public void dislikeRequest(Long id) {
+    public void dislikeRequest(String id) {
         MaintenanceRequest request = maintenanceRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
         request.setDislikes(request.getDislikes() + 1);
         maintenanceRequestRepository.save(request);
     }
 
-    public void updateStatus(Long id, String status) {
+    public void updateStatus(String id, String status) {
         MaintenanceRequest request = maintenanceRequestRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Request not found"));
         request.setStatus(MaintenanceRequest.Status.valueOf(status));

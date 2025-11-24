@@ -1,30 +1,27 @@
 package com.example.ams.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.DBRef;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 
-@Entity
-@Table(name = "apartments")
+@Document(collection = "apartments")
 public class Apartment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(nullable = false)
     private String unitNumber;
 
-    @Column(nullable = false)
     private Integer floor;
 
-    @OneToOne
-    @JoinColumn(name = "resident_id")
+    @DBRef
     private User resident;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

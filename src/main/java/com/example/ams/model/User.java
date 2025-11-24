@@ -1,26 +1,22 @@
 package com.example.ams.model;
 
-import jakarta.persistence.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.Document;
 import lombok.Data;
 
-@Entity
-@Table(name = "users")
+@Document(collection = "users")
 public class User {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private String id;
 
-    @Column(unique = true, nullable = false)
+    @Indexed(unique = true)
     private String username;
 
-    @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
     private String phoneNumber;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
 
     public enum Role {
@@ -28,11 +24,11 @@ public class User {
         ROLE_ADMIN
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
