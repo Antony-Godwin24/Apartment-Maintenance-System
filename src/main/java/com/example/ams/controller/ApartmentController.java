@@ -16,7 +16,7 @@ public class ApartmentController {
     private ApartmentRepository apartmentRepository;
 
     @PostMapping
-    public ResponseEntity<Apartment> createApartment(@RequestBody Apartment apartment) {
+    public ResponseEntity<Apartment> addApartment(@RequestBody Apartment apartment) {
         return ResponseEntity.ok(apartmentRepository.save(apartment));
     }
 

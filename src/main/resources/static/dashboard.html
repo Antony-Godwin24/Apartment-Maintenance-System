@@ -22,7 +22,11 @@
             <button class="nav-btn active" onclick="showSection('home')">Home</button>
             <button class="nav-btn" onclick="showSection('create')">New Request</button>
             <button class="nav-btn" onclick="showSection('history')">My Requests</button>
+            <button class="nav-btn" onclick="showSection('book-apartment')">Book Apartment</button>
+            <button class="nav-btn" onclick="showSection('my-bookings')">My Bookings</button>
             <button class="nav-btn admin-only hidden" onclick="showSection('all-history')">All Requests (Admin)</button>
+            <button class="nav-btn admin-only hidden" onclick="showSection('booking-requests')">Booking Requests
+                (Admin)</button>
             <button class="nav-btn admin-only hidden" onclick="showSection('add-apartment')">Add Apartment
                 (Admin)</button>
         </div>
@@ -55,10 +59,54 @@
                 </form>
             </div>
 
+            <!-- Book Apartment Section (User) -->
+            <div id="book-apartment-section" class="content-section hidden">
+                <h2>Book Apartment</h2>
+                <div class="filter-container">
+                    <div class="form-group">
+                        <label>Select Block</label>
+                        <select id="booking-block-select" onchange="handleBlockSelect()">
+                            <option value="">Select Block</option>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Floor</label>
+                        <select id="booking-floor-select" onchange="handleFloorSelect()" disabled>
+                            <option value="">Select Floor</option>
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+                </div>
+                <div id="apartment-grid" class="apartment-grid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- My Bookings Section (User) -->
+            <div id="my-bookings-section" class="content-section hidden">
+                <h2>My Bookings</h2>
+                <div id="my-bookings-list" class="paper-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- Booking Requests Section (Admin) -->
+            <div id="booking-requests-section" class="content-section hidden">
+                <h2>Booking Requests</h2>
+                <div id="booking-requests-list" class="paper-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
             <!-- Add Apartment Section (Admin) -->
             <div id="add-apartment-section" class="content-section hidden">
                 <h2>Add New Apartment</h2>
                 <form onsubmit="handleAddApartment(event)">
+                    <div class="form-group">
+                        <label>Block</label>
+                        <input type="text" id="apt-block" required placeholder="e.g., A, B">
+                    </div>
                     <div class="form-group">
                         <label>Unit Number</label>
                         <input type="text" id="apt-unit" required placeholder="e.g., 101, 205B">

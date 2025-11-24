@@ -12,6 +12,8 @@ public class Apartment {
 
     private String unitNumber;
 
+    private String block;
+
     private Integer floor;
 
     @DBRef
@@ -31,6 +33,14 @@ public class Apartment {
 
     public void setUnitNumber(String unitNumber) {
         this.unitNumber = unitNumber;
+    }
+
+    public String getBlock() {
+        return block;
+    }
+
+    public void setBlock(String block) {
+        this.block = block;
     }
 
     public Integer getFloor() {

@@ -107,6 +107,18 @@ function showSection(sectionId) {
         document.getElementById('history-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'history\')"]').classList.add('active');
         loadRequests('my');
+    } else if (sectionId === 'book-apartment') {
+        document.getElementById('book-apartment-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'book-apartment\')"]').classList.add('active');
+        loadBookingBlocks();
+    } else if (sectionId === 'booking-requests') {
+        document.getElementById('booking-requests-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'booking-requests\')"]').classList.add('active');
+        loadBookingRequests();
+    } else if (sectionId === 'my-bookings') {
+        document.getElementById('my-bookings-section').classList.remove('hidden');
+        document.querySelector('button[onclick="showSection(\'my-bookings\')"]').classList.add('active');
+        loadMyBookings();
     } else if (sectionId === 'add-apartment') {
         document.getElementById('add-apartment-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'add-apartment\')"]').classList.add('active');
@@ -115,13 +127,37 @@ function showSection(sectionId) {
 
 async function loadHome() {
     try {
-        const res = await fetch(`${API_URL}/maintenance/all`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
-        if (res.ok) {
-            const requests = await res.json();
-            renderHomeRequests(requests);
+        const [maintenanceRes, bookingRes] = await Promise.all([
+            fetch(`${API_URL}/maintenance/all`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } }),
+            fetch(`${API_URL}/bookings`, { headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` } })
+        ]);
+
+        let requests = [];
+
+        if (maintenanceRes.ok) {
+            const maintenance = await maintenanceRes.json();
+            requests = requests.concat(maintenance.map(r => ({ ...r, type: 'MAINTENANCE' })));
         }
+
+        if (bookingRes.ok) {
+            const bookings = await bookingRes.json();
+            // Normalize booking structure to match maintenance for display
+            requests = requests.concat(bookings.map(b => ({
+                id: b.id,
+                description: `Booking Request for Block ${b.apartment.block} - Unit ${b.apartment.unitNumber}`,
+                status: b.status,
+                apartmentUnit: b.apartment.unitNumber,
+                username: b.user.username,
+                requestDate: b.requestDate,
+                type: 'BOOKING',
+                raw: b // Keep raw data for actions
+            })));
+        }
+
+        // Sort by date desc
+        requests.sort((a, b) => new Date(b.requestDate) - new Date(a.requestDate));
+        renderHomeRequests(requests);
+
     } catch (err) {
         console.error(err);
     }
@@ -137,21 +173,37 @@ function renderHomeRequests(requests) {
         card.className = 'request-card';
         
         let statusColor = 'var(--text-muted)';
-        if (req.status === 'COMPLETED') statusColor = 'var(--success)';
+        if (req.status === 'COMPLETED' || req.status === 'APPROVED') statusColor = 'var(--success)';
         else if (req.status === 'REJECTED') statusColor = 'var(--danger)';
         else if (req.status === 'PENDING') statusColor = 'var(--warning)';
 
+        let typeBadge = req.type === 'MAINTENANCE' 
+            ? '<span class="status-badge" style="background: rgba(99, 102, 241, 0.1); color: var(--primary);">Maintenance</span>'
+            : '<span class="status-badge" style="background: rgba(236, 72, 153, 0.1); color: var(--secondary);">Booking</span>';
+
         let adminControls = '';
         if (role === 'ROLE_ADMIN' && req.status === 'PENDING') {
-            adminControls = `
-                <div class="admin-controls">
-                    <button onclick="updateStatus('${req.id}', 'COMPLETED')" class="btn-success">Completed Work</button>
-                </div>
-            `;
+            if (req.type === 'MAINTENANCE') {
+                adminControls = `
+                    <div class="admin-controls">
+                        <button onclick="updateStatus('${req.id}', 'COMPLETED')" class="btn-success">Completed Work</button>
+                    </div>
+                `;
+            } else if (req.type === 'BOOKING') {
+                adminControls = `
+                    <div class="admin-controls">
+                        <button onclick="handleBookingAction('${req.id}', 'APPROVED')" class="btn-success">Approve</button>
+                        <button onclick="handleBookingAction('${req.id}', 'REJECTED')" class="btn-danger">Reject</button>
+                    </div>
+                `;
+            }
         }
 
         card.innerHTML = `
-            <h3>${req.description}</h3>
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                <h3>${req.description}</h3>
+                ${typeBadge}
+            </div>
             <div class="meta">
                 <span style="color: ${statusColor}; font-weight: bold;">${req.status}</span> | 
                 Apt: ${req.apartmentUnit} | 
@@ -193,7 +245,7 @@ async function loadApartments() {
             apartments.forEach(apt => {
                 const option = document.createElement('option');
                 option.value = apt.id;
-                option.textContent = `Unit ${apt.unitNumber} (Floor ${apt.floor})`;
+                option.textContent = `Block ${apt.block || 'N/A'} - Unit ${apt.unitNumber} (Floor ${apt.floor})`;
                 select.appendChild(option);
             });
         } else {
@@ -206,6 +258,7 @@ async function loadApartments() {
 
 async function handleAddApartment(e) {
     e.preventDefault();
+    const block = document.getElementById('apt-block').value;
     const unitNumber = document.getElementById('apt-unit').value;
     const floor = document.getElementById('apt-floor').value;
 
@@ -216,11 +269,12 @@ async function handleAddApartment(e) {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${localStorage.getItem('token')}`
             },
-            body: JSON.stringify({ unitNumber, floor })
+            body: JSON.stringify({ block, unitNumber, floor })
         });
 
         if (res.ok) {
             alert('Apartment added successfully!');
+            document.getElementById('apt-block').value = '';
             document.getElementById('apt-unit').value = '';
             document.getElementById('apt-floor').value = '';
             loadApartments(); // Refresh dropdown
@@ -303,6 +357,217 @@ async function loadRequests(type) {
                 `;
                 container.appendChild(div);
             });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// --- Booking Functions ---
+
+let allApartments = [];
+
+async function loadBookingBlocks() {
+    try {
+        const res = await fetch(`${API_URL}/apartments`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        if (res.ok) {
+            allApartments = await res.json();
+            const blocks = [...new Set(allApartments.map(a => a.block).filter(Boolean))].sort();
+            
+            const select = document.getElementById('booking-block-select');
+            select.innerHTML = '<option value="">Select Block</option>';
+            blocks.forEach(block => {
+                const option = document.createElement('option');
+                option.value = block;
+                option.textContent = `Block ${block}`;
+                select.appendChild(option);
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function handleBlockSelect() {
+    const block = document.getElementById('booking-block-select').value;
+    const floorSelect = document.getElementById('booking-floor-select');
+    const grid = document.getElementById('apartment-grid');
+    
+    floorSelect.innerHTML = '<option value="">Select Floor</option>';
+    grid.innerHTML = '';
+    
+    if (!block) {
+        floorSelect.disabled = true;
+        return;
+    }
+
+    const floors = [...new Set(allApartments
+        .filter(a => a.block === block)
+        .map(a => a.floor))]
+        .sort((a, b) => a - b);
+
+    floors.forEach(floor => {
+        const option = document.createElement('option');
+        option.value = floor;
+        option.textContent = `Floor ${floor}`;
+        floorSelect.appendChild(option);
+    });
+    
+    floorSelect.disabled = false;
+}
+
+function handleFloorSelect() {
+    const block = document.getElementById('booking-block-select').value;
+    const floor = parseInt(document.getElementById('booking-floor-select').value);
+    const grid = document.getElementById('apartment-grid');
+    
+    grid.innerHTML = '';
+    
+    if (!block || isNaN(floor)) return;
+
+    const apartments = allApartments.filter(a => a.block === block && a.floor === floor);
+    
+    apartments.forEach(apt => {
+        const isBooked = apt.resident !== null;
+        const div = document.createElement('div');
+        div.className = `apartment-seat ${isBooked ? 'booked' : 'available'}`;
+        div.onclick = () => !isBooked && bookApartment(apt.id);
+        
+        div.innerHTML = `
+            <div class="seat-icon">🏠</div>
+            <div class="seat-number">${apt.unitNumber}</div>
+            <div class="seat-status">${isBooked ? 'Booked' : 'Available'}</div>
+        `;
+        
+        grid.appendChild(div);
+    });
+}
+
+async function bookApartment(apartmentId) {
+    if (!confirm('Do you want to request to book this apartment?')) return;
+
+    try {
+        const res = await fetch(`${API_URL}/bookings`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: JSON.stringify({ apartment: { id: apartmentId } })
+        });
+
+        if (res.ok) {
+            alert('Booking request sent successfully!');
+            loadBookingBlocks(); // Refresh grid
+        } else {
+            const msg = await res.text();
+            alert('Booking failed: ' + msg);
+        }
+    } catch (err) {
+        console.error(err);
+        alert('Error booking apartment');
+    }
+}
+
+async function loadMyBookings() {
+    try {
+        const res = await fetch(`${API_URL}/bookings/my`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (res.ok) {
+            const bookings = await res.json();
+            const container = document.getElementById('my-bookings-list');
+            container.innerHTML = '';
+
+            if (bookings.length === 0) {
+                container.innerHTML = '<p>No bookings found.</p>';
+                return;
+            }
+
+            bookings.forEach(booking => {
+                const div = document.createElement('div');
+                div.className = 'paper-item';
+                div.innerHTML = `
+                    <div>
+                        <strong>Block ${booking.apartment.block} - Unit ${booking.apartment.unitNumber}</strong><br>
+                        <span class="status-badge status-${booking.status.toLowerCase()}">${booking.status}</span>
+                        <small> | Date: ${new Date(booking.requestDate).toLocaleString()}</small>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function loadBookingRequests() {
+    try {
+        const res = await fetch(`${API_URL}/bookings`, {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+
+        if (res.ok) {
+            const requests = await res.json();
+            const container = document.getElementById('booking-requests-list');
+            container.innerHTML = '';
+
+            if (requests.length === 0) {
+                container.innerHTML = '<p>No pending requests.</p>';
+                return;
+            }
+
+            requests.forEach(req => {
+                const div = document.createElement('div');
+                div.className = 'paper-item';
+                
+                let actions = '';
+                if (req.status === 'PENDING') {
+                    actions = `
+                        <div class="admin-controls">
+                            <button onclick="handleBookingAction('${req.id}', 'APPROVED')" class="btn-success">Approve</button>
+                            <button onclick="handleBookingAction('${req.id}', 'REJECTED')" class="btn-danger">Reject</button>
+                        </div>
+                    `;
+                }
+
+                div.innerHTML = `
+                    <div>
+                        <strong>Request from ${req.user.username}</strong><br>
+                        Block ${req.apartment.block} - Unit ${req.apartment.unitNumber}<br>
+                        <span class="status-badge status-${req.status.toLowerCase()}">${req.status}</span>
+                    </div>
+                    ${actions}
+                `;
+                container.appendChild(div);
+            });
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function handleBookingAction(id, status) {
+    if (!confirm(`Are you sure you want to ${status.toLowerCase()} this request?`)) return;
+
+    try {
+        const res = await fetch(`${API_URL}/bookings/${id}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'text/plain',
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            },
+            body: status
+        });
+
+        if (res.ok) {
+            loadBookingRequests();
+        } else {
+            alert('Action failed');
         }
     } catch (err) {
         console.error(err);
