@@ -123,10 +123,7 @@ function showSection(sectionId) {
         document.getElementById('my-bookings-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'my-bookings\')"]').classList.add('active');
         loadMyBookings();
-    } else if (sectionId === 'all-flats') {
-        document.getElementById('all-flats-section').classList.remove('hidden');
-        document.querySelector('button[onclick="showSection(\'all-flats\')"]').classList.add('active');
-        loadAllFlats();
+
     } else if (sectionId === 'all-users') {
         document.getElementById('all-users-section').classList.remove('hidden');
         document.querySelector('button[onclick="showSection(\'all-users\')"]').classList.add('active');
@@ -599,50 +596,7 @@ async function handleBookingAction(id, status) {
 
 // --- New Admin Functions ---
 
-async function loadAllFlats() {
-    try {
-        const res = await fetch(`${API_URL}/apartments`, {
-            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        });
 
-        if (res.ok) {
-            const apartments = await res.json();
-            const tbody = document.getElementById('all-flats-table-body');
-            tbody.innerHTML = '';
-
-            if (apartments.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No apartments found.</td></tr>';
-                return;
-            }
-
-            // Sort by block, then floor, then unit number
-            apartments.sort((a, b) => {
-                if (a.block !== b.block) return a.block.localeCompare(b.block);
-                if (a.floor !== b.floor) return a.floor - b.floor;
-                return a.unitNumber.localeCompare(b.unitNumber);
-            });
-
-            apartments.forEach(apt => {
-                const row = document.createElement('tr');
-                const isBooked = apt.resident !== null;
-                const status = isBooked ? 'Booked' : 'Available';
-                const statusClass = isBooked ? 'status-booked' : 'status-available';
-                const resident = isBooked ? apt.resident.username : '-';
-
-                row.innerHTML = `
-                    <td>${apt.block}</td>
-                    <td>${apt.floor}</td>
-                    <td>${apt.unitNumber}</td>
-                    <td><span class="status-badge ${statusClass}">${status}</span></td>
-                    <td>${resident}</td>
-                `;
-                tbody.appendChild(row);
-            });
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
 
 async function loadAllUsers() {
     try {
@@ -758,10 +712,13 @@ async function loadViewAllFlats() {
             }
 
             // Sort by block, then floor, then unit number
+            // Sort by block, then floor, then unit number
             apartments.sort((a, b) => {
-                if (a.block !== b.block) return a.block.localeCompare(b.block);
+                const blockA = a.block || '';
+                const blockB = b.block || '';
+                if (blockA !== blockB) return blockA.localeCompare(blockB);
                 if (a.floor !== b.floor) return a.floor - b.floor;
-                return a.unitNumber.localeCompare(b.unitNumber);
+                return (a.unitNumber || '').localeCompare(b.unitNumber || '');
             });
 
             apartments.forEach(apt => {
